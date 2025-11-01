@@ -14,12 +14,9 @@ connectDb()
     console.error("connection not possible");
   });
 
+app.use(express.json());
 app.post("/signup", async (req, res) => {
-  const user = new User({
-    firstName: "virat",
-    lastName: "kohli",
-    age: 35,
-  });
+  const user = new User(req.body);
   try {
     await user.save();
     res.status(200).send("user added");
