@@ -21,7 +21,7 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.status(200).send("user added");
   } catch (err) {
-    res.status(400).send("error saving data", +err.message);
+    res.status(400).send(err.message);
   }
 });
 
@@ -46,6 +46,32 @@ app.get("/feed", async (req, res) => {
   try {
     const users = await User.find({});
     res.status(200).send(users);
+  } catch {
+    res.status(400).send("Something went wrong");
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    await User.findByIdAndDelete(userId);
+    res.send("Deleted successfully");
+  } catch {
+    res.status(400).send("Something went wrong");
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+  try {
+    // const user = await User.findByIdAndUpdate({ _id: userId }, data, {
+    const user = await User.findByIdAndUpdate(userId, data, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+    console.log(user);
+    res.send("updated successfully");
   } catch {
     res.status(400).send("Something went wrong");
   }
