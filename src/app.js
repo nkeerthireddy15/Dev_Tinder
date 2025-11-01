@@ -3,6 +3,8 @@ const { adminauth, userauth } = require("./middlewares/auth");
 const app = express();
 const connectDb = require("./database");
 const User = require("./models/users");
+const { validateSignup } = require("./Utils/Validatos");
+const bcrypt = require("bcrypt");
 connectDb()
   .then(() => {
     console.log("connection established");
@@ -16,8 +18,20 @@ connectDb()
 
 app.use(express.json());
 app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
   try {
+    const { password } = req.body;
+    const passwordhash = await bcrypt.hash(password, 10);
+    console.log(passwordhash);
+    validateSignup(req);
+    const user = new User({
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      password: passwordhash,
+      age: req.body.age,
+      skills: req.body.skills,
+      photoUrl: req.body.photoUrl,
+      emailId: req.body.emailId,
+    });
     await user.save();
     res.status(200).send("user added");
   } catch (err) {
