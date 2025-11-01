@@ -24,3 +24,29 @@ app.post("/signup", async (req, res) => {
     res.status(400).send("error saving data", +err.message);
   }
 });
+
+// get usr
+app.get("/user", async (req, res) => {
+  const email = req.body.emailId;
+  console.log(email, 990);
+  try {
+    // const users = await User.find({ emailId: email });
+    const users = await User.findOne({ emailId: email });
+    // if (users.length === 0) {
+    //   res.status(400).send("User not found");
+    // }
+    res.send(users);
+    res.send("data got successfully");
+  } catch {
+    res.status(400).send("Someting went wrong");
+  }
+});
+
+app.get("/feed", async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.status(200).send(users);
+  } catch {
+    res.status(400).send("Something went wrong");
+  }
+});
