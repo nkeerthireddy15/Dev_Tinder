@@ -1,10 +1,12 @@
 const express = require("express");
-const { adminauth, userauth } = require("./middlewares/auth");
+const { userauth } = require("./middlewares/auth");
 const app = express();
 const connectDb = require("./database");
 const User = require("./models/users");
 const { validateSignup } = require("./Utils/Validatos");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 connectDb()
   .then(() => {
     console.log("connection established");
@@ -17,6 +19,7 @@ connectDb()
   });
 
 app.use(express.json());
+app.use(cookieParser());
 app.post("/signup", async (req, res) => {
   try {
     const { password } = req.body;
@@ -50,10 +53,25 @@ app.post("/login", async (req, res) => {
     if (!isValid) {
       res.send("Invalid credentials");
     } else {
+      const token = jwt.sign({ _id: user._id }, "DEVTINDER@1234#", {
+        expiresIn: "7d",
+      });
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 3600000),
+      });
       res.send("Successfully logged in");
     }
   } catch (err) {
     res.status(400).send("Error: " + err.message);
+  }
+});
+
+app.get("/profile", userauth, async (req, res) => {
+  try {
+    const user = req.user;
+    res.send(user);
+  } catch (err) {
+    res.status(400).send("Error:" + err.message);
   }
 });
 
@@ -125,4 +143,9 @@ app.patch("/user/:userId", async (req, res) => {
   } catch (err) {
     res.status(400).send(err.message);
   }
+});
+
+app.post("/connectionrequest", userauth, (req, res) => {
+  const user = req.user;
+  res.send(user.firstName + " sent the connection request");
 });
